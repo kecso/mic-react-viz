@@ -1,0 +1,12 @@
+{
+  "components": {
+    "seeds": {
+      "TicTacToe": {
+        "src": "src/seeds/TicTacToe"
+      }
+    }
+  },
+  "dependencies": {
+    "seeds": {}
+  }
+}
