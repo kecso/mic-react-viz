@@ -1,12 +1,10 @@
 'use strict';
 
-var config = require('./config.webgme'),
+var config = require('./config.default'),
     validateConfig = require('webgme/config/validator');
 
 // Add/overwrite any additional settings here
-config.server.port = 8888;
-config.mongo.uri = 'mongodb://127.0.0.1:27017/mrv-ds';
-config.plugin.allowServerExecution = true;
+config.mongo.uri = 'mongodb://mongo:27017/mrv-ds';
 
 validateConfig(config);
 module.exports = config;

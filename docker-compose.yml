@@ -1,0 +1,34 @@
+# To build and launch (first time):
+#   $ docker-compose up -d
+# To create new images to update content:
+#   $ docker-compose build # use `--no-cache` to force building from scratch
+# Short command for rebuilding and restarting
+#   $ docker-compose up -d --build
+# To stop containers:
+#  $ docker-compose stop
+# To clean up containers/images/networks:
+#  $ docker system prune
+version: '3'
+networks:
+  database:
+    driver: bridge
+services:
+  webgme:
+    build:
+      context: .
+    depends_on:
+    - mongo
+    environment:
+    - NODE_ENV=dc
+    volumes:
+    - ./blob-local-storage:/blob-local-storage
+    networks:
+    - database
+    ports:
+    - 8888:8888 #Needs to be in sync with the config file!
+  mongo:
+    image: mongo:5.0-nanoserver
+    volumes:
+    - ./db:/data/db
+    networks:
+    - database
