@@ -39,7 +39,8 @@ There is a single seed in the project representing the example studio - tictacto
 To create new one, just use the command `webgme new seed -f mySeedFile.webgmex mySeedName`.
 
 ### Plugin
-There are two plugins in this studio to showcase the currently available languages for interpretations.
+There are three plugins in this studio to showcase the currently available languages for interpretations.
 - CreateGame: this plugin is written in python and responsible for creating a game in the proper folder with the start state.
 - CheckWinCondition: this plugin is written in javascript and simply checks if one of the players has won the game.
+- BuildDescriptor: this plugin is written in javascript and shows how a structured data representing the model for the visualization can be created with a plugin - which allows for a more generalized approach and minimizes the need for learning all the different APIs of the system.
 

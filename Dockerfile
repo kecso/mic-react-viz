@@ -16,7 +16,8 @@ WORKDIR /usr/app
 ADD . /usr/app/
 
 # Install node-modules
+RUN npm install -g npm@latest
 RUN npm cache clean --force
 RUN npm install --force --no-package-lock
 
-CMD ["npm", "start"]
+CMD ["node", "app.js"]

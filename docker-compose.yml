@@ -27,7 +27,7 @@ services:
     ports:
     - 8888:8888 #Needs to be in sync with the config file!
   mongo:
-    image: mongo:5.0-nanoserver
+    image: mongo:5.0.19
     volumes:
     - ./db:/data/db
     networks:
