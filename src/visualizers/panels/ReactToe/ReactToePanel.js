@@ -51,11 +51,16 @@ define([
             client: this._client
         });
 
+        this.widget = null;
+
         this.onActivate();
     };
 
     ReactToePanel.prototype.afterAppend = function afterAppend() {
         console.log('AFTER APPEND');
+        /*if(!this.widget) {
+            this.widget = ReactToeWidget(this.appId, this.control, this);
+        }*/
         ReactToeWidget(this.appId, this.control, this);
     };
 

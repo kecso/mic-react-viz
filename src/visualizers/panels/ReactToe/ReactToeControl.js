@@ -6,11 +6,13 @@
 define([
     'js/Constants',
     'js/Utils/GMEConcepts',
-    'js/NodePropertyNames'
+    'js/NodePropertyNames',
+    'mic-react-viz/constants'
 ], function (
     CONSTANTS,
     GMEConcepts,
-    nodePropertyNames
+    nodePropertyNames,
+    TOE_CONSTANTS
 ) {
 
     'use strict';
@@ -28,9 +30,14 @@ define([
         this._descriptor = null;
 
         this._logger.debug('ctor finished');
+
+        //TODO: this information should be gathered from the META
+        this._piece_o = '/J/Q';
+        this._piece_x = '/J/K';
     }
 
     ReactToeControl.prototype.registerUpdate = function (func) {
+        console.log('trying to register...');
         const firstTry = this._updateWidget === null ? true : false;
         this._updateWidget = func;
         if(this._descriptor && firstTry) {
@@ -49,14 +56,16 @@ define([
         // Remove current territory patterns
         if (this._currentNodeId) {
             _client.removeUI(this._territoryId);
+
         }
 
         this._currentNodeId = nodeId;
+        this._currentNodeParentId = _client.getNode(this._currentNodeId).getParentId();
 
         if (typeof this._currentNodeId === 'string') {
             // Put new node's info into territory rules
             this._selfPatterns = {};
-            this._selfPatterns[this._currentNodeId] = {children: 1}; //all workflows in the project
+            this._selfPatterns[this._currentNodeId] = {children: 3}; //all workflows in the project
 
             this._territoryId = _client.addUI(this, events => {
                 this._eventCallback(events);
@@ -68,7 +77,7 @@ define([
     };
 
     ReactToeControl.prototype._createDescriptor = function () {
-        const {_client, _META, _updateWidget, _currentNodeId, _logger} = this;
+        const {_client, _META, _currentNodeId, _logger} = this;
         if (typeof _currentNodeId === 'string') {
             const context = _client.getCurrentPluginContext('BuildDescriptor');
             context.managerConfig.activeNode = _currentNodeId;
@@ -80,8 +89,8 @@ define([
                 if (err === null && result && result.success) {
                     const descriptor = JSON.parse(result.messages[0].message);
                     this._descriptor = descriptor;
-                    if(_updateWidget) {
-                        _updateWidget(descriptor);
+                    if(this._updateWidget) {
+                        this._updateWidget(descriptor);
                     }
                 } else {
                     //TODO - make a proper way of handling this
@@ -92,7 +101,24 @@ define([
     };
 
     ReactToeControl.prototype.playerMoves = function (player, position) {
+        console.log(player, position);
+        const {_client, _currentNodeId, _logger} = this;
+        if (typeof _currentNodeId === 'string') {
+            const context = _client.getCurrentPluginContext('PlayerMoves');
+            context.managerConfig.activeNode = _currentNodeId;
+            context.managerConfig.namespace = null;
+            context.pluginConfig = {position};
 
+            _client.runBrowserPlugin('PlayerMoves', context, (err, result)=>{
+                // console.log('export:', err, result);
+                if (err === null && result && result.success) {
+                    //TODO: - there is nothing to do as the plugin updated the model
+                } else {
+                    //TODO - make a proper way of handling this
+                    _logger.error('Failed to make move', err);
+                }
+            });
+        }
     }
     /* * * * * * * * Node Event Handling * * * * * * * */
     ReactToeControl.prototype._eventCallback = function (events) {
@@ -138,6 +164,7 @@ define([
     ReactToeControl.prototype.destroy = function () {
         this._detachClientEventListeners();
         this._removeToolbarItems();
+        this._updateWidget = null;
     };
 
     ReactToeControl.prototype._attachClientEventListeners = function () {
@@ -154,13 +181,17 @@ define([
         this._displayToolbarItems();
 
         if (typeof this._currentNodeId === 'string') {
-            WebGMEGlobal.State.registerActiveObject(this._currentNodeId, {suppressVisualizerFromNode: true});
+            //  trying to force a refresh in case of activation
+            const nodeId = this._currentNodeId;
+            this._currentNodeId = null;
+            WebGMEGlobal.State.registerActiveObject(nodeId, {suppressVisualizerFromNode: true});
         }
     };
 
     ReactToeControl.prototype.onDeactivate = function () {
         this._detachClientEventListeners();
         this._hideToolbarItems();
+        this._updateWidget = null;
     };
 
     /* * * * * * * * * * Updating the toolbar * * * * * * * * * */
@@ -194,6 +225,7 @@ define([
     };
 
     ReactToeControl.prototype._initializeToolbar = function () {
+        const {_client, _logger} = this;
         var self = this,
             toolBar = WebGMEGlobal.Toolbar;
 
@@ -202,26 +234,42 @@ define([
         this._toolbarItems.push(toolBar.addSeparator());
 
         /************** Go to hierarchical parent button ****************/
-        this.$btnModelHierarchyUp = toolBar.addButton({
-            title: 'Go to parent',
-            icon: 'glyphicon glyphicon-circle-arrow-up',
+        this.$btnNewGame = toolBar.addButton({
+            title: 'Start new game',
+            icon: 'glyphicon glyphicon-plus',
             clickFn: function (/*data*/) {
-                WebGMEGlobal.State.registerActiveObject(self._currentNodeParentId);
+                const context = _client.getCurrentPluginContext('CreateGame');
+                context.managerConfig.activeNode = self._currentNodeParentId;
+                context.managerConfig.namespace = null;
+                context.pluginConfig = {};
+
+                _client.runServerPlugin('CreateGame', context, (err, result)=>{
+                    // console.log('export:', err, result);
+                    if (err === null && result && result.success) {
+                        //TODO: - there is nothing to do as the plugin updated the model
+                        const newGamePath = result.messages[0].message;
+                        WebGMEGlobal.State.registerActiveObject(newGamePath);
+                        WebGMEGlobal.State.registerActiveVisualizer('ReactToe');
+                    } else {
+                        //TODO - make a proper way of handling this
+                        _logger.error('Failed to initiate new game', err);
+                    }
+                });
             }
         });
-        this._toolbarItems.push(this.$btnModelHierarchyUp);
-        this.$btnModelHierarchyUp.hide();
+        this._toolbarItems.push(this.$btnNewGame);
+        this.$btnNewGame.hide();
 
         /************** Checkbox example *******************/
 
-        this.$cbShowConnection = toolBar.addCheckBox({
-            title: 'toggle checkbox',
-            icon: 'gme icon-gme_diagonal-arrow',
-            checkChangedFn: function (data, checked) {
-                self._logger.debug('Checkbox has been clicked!');
-            }
-        });
-        this._toolbarItems.push(this.$cbShowConnection);
+        // this.$cbShowConnection = toolBar.addCheckBox({
+        //     title: 'toggle checkbox',
+        //     icon: 'gme icon-gme_diagonal-arrow',
+        //     checkChangedFn: function (data, checked) {
+        //         self._logger.debug('Checkbox has been clicked!');
+        //     }
+        // });
+        // this._toolbarItems.push(this.$cbShowConnection);
 
         this._toolbarInitialized = true;
     };

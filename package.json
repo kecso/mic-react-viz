@@ -17,6 +17,9 @@
     "install": "node ./node_modules/webpack/bin/webpack.js --mode=production"
   },
   "version": "1.0.0",
+  "browser": {
+    "constants.js": "./src/common/constants.js"
+  },
   "devDependencies": {
     "mocha": "^5.2.0",
     "webpack-cli": "^5.1.4"

@@ -26,6 +26,10 @@
       "CreateGame": {
         "src": "src/plugins/CreateGame",
         "test": "test/plugins/CreateGame"
+      },
+      "PlayerMoves": {
+        "src": "src/plugins/PlayerMoves",
+        "test": "test/plugins/PlayerMoves"
       }
     }
   },

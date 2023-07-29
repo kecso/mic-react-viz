@@ -60,20 +60,32 @@ define([
         const {core, logger, META, activeNode, result} = this;
 
         const descriptor = {player:CONSTANTS.PLAYER.O,board:[],position2path:{}};
+        const nodeHash = {};
 
 
         core.loadSubTree(activeNode)
         .then(nodes=>{
-            const nodeHash = {};
             nodes.forEach(node => {
                 nodeHash[core.getPath(node)] = node;
             });
+            
+            const currentPlayerPath = core.getPointerPath(activeNode,'current');
+            if(core.getAttribute(nodeHash[currentPlayerPath], 'name') === 'PlayerO') {
+                descriptor.player = CONSTANTS.PLAYER.O;
+            } else {
+                descriptor.player = CONSTANTS.PLAYER.X;
+            }
+
             core.getChildrenPaths(activeNode).forEach(playerOrBoard => {
                 const node = nodeHash[playerOrBoard];
                 if(core.isInstanceOf(node,META.Board)) {
                     descriptor.boardPath = playerOrBoard;
                 }
             });
+            return this.invokePlugin('CheckWinCondition',{pluginConfig:{}});
+        })
+        .then(inner => {
+            descriptor.win = JSON.parse(inner.messages[0].message);
             descriptor.board = UTILS.getBoardDescriptor(core, META, nodeHash[descriptor.boardPath], nodeHash);
             descriptor.position2path = UTILS.getPositionHash(core, nodeHash[descriptor.boardPath], nodeHash);
             this.createMessage(activeNode, JSON.stringify(descriptor));

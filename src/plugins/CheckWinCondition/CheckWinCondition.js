@@ -73,7 +73,7 @@ define([
                    boardNode = node;
                 }
             });
-            board = UTILS.getBoardDescriptor(core, META, boardNode, nodeHash);
+            const board = UTILS.getBoardDescriptor(core, META, boardNode, nodeHash);
             const checks=[
                 [0,1,2], [3,4,5], [6,7,8], // 0 1 2      0+1+2, 3+4+5, 6+7+8
                 [0,4,8], [2,4,6],          // 3 4 5  =>  0+4+8, 2+4+6
@@ -85,12 +85,12 @@ define([
                 if( board[check[0]] !== CONSTANTS.PIECE.EMPTY &&
                     board[check[0]] === board[check[1]] &&
                     board[check[1]] === board[check[2]]) {
-                        winner = board[check[0]] === CONSTANTS.PIECE.X ? CONSTANTS.PLAYER.X : CONSTANTS.PLAYER.O;
+                        winner ={};
+                        winner.player = board[check[0]] === CONSTANTS.PIECE.X ? CONSTANTS.PLAYER.X : CONSTANTS.PLAYER.O;
+                        winner.positions = check;
                     }
             });
-            if (winner) {
-                this.createMessage(activeNode, winner);
-            }
+            this.createMessage(activeNode, JSON.stringify(winner));
 
             result.setSuccess(true);
             callback(null, result);

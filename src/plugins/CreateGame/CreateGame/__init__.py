@@ -23,11 +23,14 @@ class CreateGame(PluginBase):
         active_node = self.active_node #the context should be the games folder
         META = self.META
         max_index = -1
+        index = 0
 
         logger.error('inside the code')
+        logger.error(active_node)
         for child in core.load_children(active_node):
             name = core.get_attribute(child,'name')
-            index = int(name.split('-')[1])
+            if(len(name.split('-')) > 1):
+                index = int(name.split('-')[1])
             if index > max_index:
                 max_index = index
         new_game = core.create_node({
@@ -36,8 +39,7 @@ class CreateGame(PluginBase):
         });
         core.set_attribute(new_game, 'name', 'game-' + format(max_index+1, '03d'))
         
-        logger.error('about to save')
         # As the ticatactoegame prototype already has everything setup we do not need
         # to do anything further.
         self.util.save(root_node, self.commit_hash, 'master', 'created a new game object which should be renamed')
-        logger.error('should have saved already')
+        self.create_message(active_node, core.get_path(new_game))

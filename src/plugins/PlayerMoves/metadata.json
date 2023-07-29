@@ -1,0 +1,26 @@
+{
+  "id": "PlayerMoves",
+  "name": "PlayerMoves",
+  "version": "0.1.0",
+  "description": "",
+  "icon": {
+    "class": "glyphicon glyphicon-cog",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": false,
+  "dependencies": [],
+  "writeAccessRequired": true,
+  "configStructure": [
+    {
+      "name": "position",
+      "displayName": "position",
+      "description": "Where was the move made",
+      "value": 1,
+      "valueType": "number",
+      "minValue": 1,
+      "maxValue": 9,
+      "readOnly": false
+    }
+  ]
+}

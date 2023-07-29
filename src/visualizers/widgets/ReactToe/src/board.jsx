@@ -1,19 +1,24 @@
-import CONSTANTS from 'src/common/constants';
+import CONSTANTS from 'constants.js';
 import Tile from './tile';
 
-export default function Board(props) {
-    const {player, board} = this;
+export default function Board({player, board, win}) {
 
-    getTiles = () => {
+    const getTiles = () => {
         const tiles = [];
         board.forEach((value, index) => {
-            tiles.push(<Tile player={player} piece={value} position={index}/>);
+            tiles.push(<Tile key={'tile_' + index} player={player} piece={value} position={index} win={win}/>);
         });
 
         return tiles;
     }
+
     return (
-        <div>
+        <div style={{
+            display:'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '0px',
+            width: '300px'
+        }}>
             {getTiles()}
         </div>
     )
